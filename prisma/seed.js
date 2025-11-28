@@ -196,6 +196,78 @@ async function main() {
     owner: ownerUser.email,
     cashier: cashierUser.email,
   });
+
+    // 7. Seed Outlets
+  const outletsData = [
+    {
+      name: "Main Shop",
+      code: "OUTLET-MAIN",
+      address: "123 Main Road",
+    },
+    {
+      name: "Warehouse",
+      code: "OUTLET-WH",
+      address: "Industrial Zone Block 4",
+    },
+  ];
+
+  const outlets = {};
+  for (const o of outletsData) {
+    const outlet = await prisma.outlet.upsert({
+      where: { code: o.code },
+      update: {},
+      create: o,
+    });
+    outlets[o.code] = outlet;
+  }
+  console.log("Outlets seeded:", Object.keys(outlets));
+
+  // 8. Link users to outlets
+  // Owner has both outlets, default = Main
+  await prisma.userOutlet.upsert({
+    where: {
+      userId_outletId: {
+        userId: ownerUser.id,
+        outletId: outlets["OUTLET-MAIN"].id,
+      },
+    },
+    update: { isDefault: true },
+    create: {
+      userId: ownerUser.id,
+      outletId: outlets["OUTLET-MAIN"].id,
+      isDefault: true,
+    },
+  });
+
+  await prisma.userOutlet.upsert({
+    where: {
+      userId_outletId: {
+        userId: ownerUser.id,
+        outletId: outlets["OUTLET-WH"].id,
+      },
+    },
+    update: {},
+    create: {
+      userId: ownerUser.id,
+      outletId: outlets["OUTLET-WH"].id,
+    },
+  });
+
+  // Cashier only sees Main Shop
+  await prisma.userOutlet.upsert({
+    where: {
+      userId_outletId: {
+        userId: cashierUser.id,
+        outletId: outlets["OUTLET-MAIN"].id,
+      },
+    },
+    update: {},
+    create: {
+      userId: cashierUser.id,
+      outletId: outlets["OUTLET-MAIN"].id,
+      isDefault: true,
+    },
+  });
 }
 
 main()

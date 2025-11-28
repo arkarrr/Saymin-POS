@@ -50,7 +50,7 @@ export function LoginForm({ className, ...props }) {
       }
 
       // successful login → go to dashboard
-      router.push("/dashboard");
+      router.push("/outlets");
     } catch (err) {
       console.error("Login error:", err);
       setError("Something went wrong. Please try again.");

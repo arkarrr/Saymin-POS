@@ -8,20 +8,21 @@ datasource db {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String
-  email        String     @unique
+  email        String   @unique
   passwordHash String
-  isActive     Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  roles        UserRole[]
+  roles       UserRole[]
+  userOutlets UserOutlet[]
 }
 
 model Role {
-  id          Int             @id @default(autoincrement())
-  name        String          @unique   // 'OWNER', 'CASHIER'
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // 'OWNER', 'CASHIER'
   displayName String
   description String?
 
@@ -35,18 +36,18 @@ model UserRole {
 
   assignedAt DateTime @default(now())
 
-  user   User @relation(fields: [userId], references: [id])
-  role   Role @relation(fields: [roleId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
 
   @@id([userId, roleId])
 }
 
 model Permission {
-  id          Int              @id @default(autoincrement())
-  key         String           @unique   // 'MANAGE_PRODUCTS', 'VIEW_REPORTS'
+  id          Int     @id @default(autoincrement())
+  key         String  @unique // 'MANAGE_PRODUCTS', 'VIEW_REPORTS'
   description String?
 
-  roles       RolePermission[]
+  roles RolePermission[]
 }
 
 model RolePermission {
@@ -57,4 +58,27 @@ model RolePermission {
   permission Permission @relation(fields: [permissionId], references: [id])
 
   @@id([roleId, permissionId])
+}
+
+model Outlet {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String   @unique
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users UserOutlet[]
+}
+
+model UserOutlet {
+  userId    Int
+  outletId  Int
+  isDefault Boolean @default(false)
+
+  user   User   @relation(fields: [userId], references: [id])
+  outlet Outlet @relation(fields: [outletId], references: [id])
+
+  @@id([userId, outletId])
 }
