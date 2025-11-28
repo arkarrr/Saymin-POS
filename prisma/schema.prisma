@@ -20,12 +20,13 @@ model User {
 }
 
 model Role {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique  // e.g. "OWNER", "CASHIER"
-  displayName String              // e.g. "Owner", "Cashier"
+  id          Int             @id @default(autoincrement())
+  name        String          @unique   // 'OWNER', 'CASHIER'
+  displayName String
   description String?
 
   users       UserRole[]
+  permissions RolePermission[]
 }
 
 model UserRole {
@@ -37,5 +38,23 @@ model UserRole {
   user   User @relation(fields: [userId], references: [id])
   role   Role @relation(fields: [roleId], references: [id])
 
-  @@id([userId, roleId]) // composite PK so each (user, role) is unique
+  @@id([userId, roleId])
+}
+
+model Permission {
+  id          Int              @id @default(autoincrement())
+  key         String           @unique   // 'MANAGE_PRODUCTS', 'VIEW_REPORTS'
+  description String?
+
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
 }
