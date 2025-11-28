@@ -1,11 +1,13 @@
-// src/app/api/outlets/my/route.js
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import prisma from "@/lib/db";
 
-function getUserFromCookie() {
-  const cookieStore = cookies();
+// If you're using Prisma, ensure Node runtime:
+export const runtime = "nodejs";
+
+async function getUserFromCookie() {
+  const cookieStore = await cookies(); // 👈 await here
   const token = cookieStore.get("pos_session")?.value;
   if (!token) return null;
 
@@ -18,7 +20,7 @@ function getUserFromCookie() {
 }
 
 export async function GET() {
-  const payload = getUserFromCookie();
+  const payload = await getUserFromCookie(); // 👈 await helper
   if (!payload?.userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }

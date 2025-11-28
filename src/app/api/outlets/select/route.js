@@ -1,11 +1,12 @@
-// src/app/api/outlets/select/route.js
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import prisma from "@/lib/db";
 
-function getUserFromCookie() {
-  const cookieStore = cookies();
+export const runtime = "nodejs";
+
+async function getUserFromCookie() {
+  const cookieStore = await cookies(); // 👈 await here
   const token = cookieStore.get("pos_session")?.value;
   if (!token) return null;
 
@@ -18,7 +19,7 @@ function getUserFromCookie() {
 }
 
 export async function POST(req) {
-  const payload = getUserFromCookie();
+  const payload = await getUserFromCookie(); // 👈 await helper
   if (!payload?.userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
@@ -32,7 +33,7 @@ export async function POST(req) {
     );
   }
 
-  // Verify that this outlet belongs to the user
+  // verify this outlet belongs to the user
   const userOutlet = await prisma.userOutlet.findUnique({
     where: {
       userId_outletId: {
