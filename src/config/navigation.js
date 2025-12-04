@@ -4,6 +4,7 @@ import {
   IconHome,
   IconLayoutDashboard,
   IconPackage,
+  IconPackages,
   IconTrademark,
   IconUsersGroup,
 } from "@tabler/icons-react";
@@ -13,6 +14,11 @@ export const primaryNavItems = [
     title: "Dashboard",
     url: "/dashboard",
     icon: IconLayoutDashboard,
+  },
+  {
+    title: "Variants",
+    url: "/variants",
+    icon: IconPackages,
   },
   {
     title: "Customers",
