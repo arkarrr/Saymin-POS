@@ -348,7 +348,7 @@ async function main() {
     ],
   });
 
-    // 9. Seed Brands
+  // 9. Seed Brands
   console.log("Resetting brands...");
 
   // Delete all existing brands (dev-friendly)
@@ -376,6 +376,122 @@ async function main() {
   });
 
   console.log("Brands seeded:", await prisma.brand.count());
+
+  // 💥 Reset Products & Variants
+  console.log("Resetting products & variants...");
+
+  await prisma.productVariant.deleteMany({});
+  await prisma.product.deleteMany({});
+
+  // Get brands from earlier seed
+  const greenGrow = await prisma.brand.findUnique({
+    where: { name: "GreenGrow" },
+  });
+  const agriProtect = await prisma.brand.findUnique({
+    where: { name: "AgriProtect" },
+  });
+  const sunHarvest = await prisma.brand.findUnique({
+    where: { name: "SunHarvest" },
+  });
+
+  // Create products
+  const urea = await prisma.product.create({
+    data: {
+      name: "Urea 46%",
+      brandId: greenGrow?.id,
+      remarks: "Nitrogen fertilizer",
+    },
+  });
+
+  const npk = await prisma.product.create({
+    data: {
+      name: "NPK 15-15-15",
+      brandId: sunHarvest?.id,
+      remarks: "Balanced nutrient fertilizer",
+    },
+  });
+
+  const maxGuard = await prisma.product.create({
+    data: {
+      name: "MaxGuard Insecticide",
+      brandId: agriProtect?.id,
+      remarks: "Broad-spectrum insecticide",
+    },
+  });
+
+  // Variants
+  await prisma.productVariant.createMany({
+    data: [
+      // Urea 46% variants
+      {
+        productId: urea.id,
+        sku: "UREA-50KG",
+        label: "50 kg bag",
+        unit: "kg",
+        sizeValue: 50,
+        costPrice: "28000.00",
+        sellPrice: "32000.00",
+        openingStock: 20,
+      },
+      {
+        productId: urea.id,
+        sku: "UREA-25KG",
+        label: "25 kg bag",
+        unit: "kg",
+        sizeValue: 25,
+        costPrice: "15000.00",
+        sellPrice: "18000.00",
+        openingStock: 15,
+      },
+
+      // NPK variants
+      {
+        productId: npk.id,
+        sku: "NPK15-25KG",
+        label: "25 kg bag",
+        unit: "kg",
+        sizeValue: 25,
+        costPrice: "26000.00",
+        sellPrice: "30000.00",
+        openingStock: 10,
+      },
+      {
+        productId: npk.id,
+        sku: "NPK15-5KG",
+        label: "5 kg pack",
+        unit: "kg",
+        sizeValue: 5,
+        costPrice: "6000.00",
+        sellPrice: "7500.00",
+        openingStock: 30,
+      },
+
+      // MaxGuard variants
+      {
+        productId: maxGuard.id,
+        sku: "MAXGUARD-1L",
+        label: "1 L bottle",
+        unit: "L",
+        sizeValue: 1,
+        costPrice: "9000.00",
+        sellPrice: "11000.00",
+        openingStock: 25,
+      },
+      {
+        productId: maxGuard.id,
+        sku: "MAXGUARD-500ML",
+        label: "500 ml bottle",
+        unit: "ml",
+        sizeValue: 500,
+        costPrice: "5500.00",
+        sellPrice: "7000.00",
+        openingStock: 40,
+      },
+    ],
+  });
+
+  console.log("Products seeded:", await prisma.product.count());
+  console.log("Variants seeded:", await prisma.productVariant.count());
 }
 
 main()

@@ -101,4 +101,42 @@ model Brand {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  products  Product[]
+}
+
+model Product {
+  id          Int              @id @default(autoincrement())
+  name        String
+  brandId     Int
+  remarks     String?
+  isActive    Boolean          @default(true)
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  brand       Brand            @relation(fields: [brandId], references: [id])
+  variants    ProductVariant[]
+}
+
+model ProductVariant {
+  id           Int      @id @default(autoincrement())
+  productId    Int
+  sku          String?  @unique
+  barcode      String?  @unique
+
+  label        String
+  unit         String
+  sizeValue    Float?   // e.g. 1, 0.5, 50
+
+  costPrice    Decimal  @db.Decimal(10, 2)
+  sellPrice    Decimal  @db.Decimal(10, 2)
+  openingStock Int      @default(0)
+  remarks      String?
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  product      Product  @relation(fields: [productId], references: [id])
 }
