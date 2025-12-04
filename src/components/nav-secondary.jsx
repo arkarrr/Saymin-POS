@@ -1,5 +1,6 @@
 "use client";
-import * as React from "react"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   SidebarGroup,
@@ -13,17 +14,24 @@ export function NavSecondary({
   items,
   ...props
 }) {
+  const pathname = usePathname();
+
+  function isActive(url) {
+    if (url === "/") return pathname === "/";
+    return pathname === url || pathname.startsWith(`${url}/`);
+  }
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
-                <a href={item.url}>
+              <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                <Link href={item.url}>
                   <item.icon />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

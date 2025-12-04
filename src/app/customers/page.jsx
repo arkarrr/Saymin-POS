@@ -133,11 +133,17 @@ export default function CustomersPage() {
     : "Add a new customer to your POS system.";
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
+    <SidebarProvider
+    style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)"
+        }
+      }
+    >
+      <AppSidebar variant="inset"/>
       <SidebarInset>
         <SiteHeader />
-
         <main className="flex-1 px-4 pb-6 pt-4 sm:px-6 sm:pb-8">
           <div className="mx-auto flex max-w-6xl flex-col gap-4">
             {/* Page header */}
