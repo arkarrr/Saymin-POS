@@ -311,6 +311,12 @@ async function main() {
     },
   });
 
+  // 7. Customers seed (dev reset)
+  console.log("Resetting customers...");
+
+  // Delete all existing customers
+  await prisma.customer.deleteMany({});
+
   // Ensure the default Walk-in Customer (ID = 1) exists
   await prisma.customer.upsert({
     where: { id: 1 },
@@ -324,7 +330,7 @@ async function main() {
     },
   });
 
-  // 2. Create two more normal customers
+  // Create two more normal customers
   await prisma.customer.createMany({
     data: [
       {
@@ -340,10 +346,7 @@ async function main() {
         remarks: "Wholesale buyer",
       },
     ],
-    skipDuplicates: true,
   });
-
-  console.log("Seed complete: 3 customers created.");
 }
 
 main()
