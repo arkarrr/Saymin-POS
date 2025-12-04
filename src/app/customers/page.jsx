@@ -8,10 +8,10 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { toast } from "sonner";
 
 import { CustomerForm } from "@/components/customers/customer-form";
 import { Button } from "@/components/ui/button";
-import { FieldDescription } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -23,19 +23,18 @@ import {
 export default function CustomersPage() {
   const [customers, setCustomers] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState("");
-  const [selectedCustomer, setSelectedCustomer] = React.useState(null);
-  const [actionMessage, setActionMessage] = React.useState("");
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [selectedCustomer, setSelectedCustomer] = React.useState(null);
 
   async function fetchCustomers() {
     setLoading(true);
-    setError("");
     try {
       const res = await fetch("/api/customers");
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data.message || "Failed to load customers");
+        toast("Failed to load customers", {
+          description: data.message || "Please try again in a moment.",
+        });
         setLoading(false);
         return;
       }
@@ -43,7 +42,9 @@ export default function CustomersPage() {
       setCustomers(data);
     } catch (err) {
       console.error("Fetch customers error:", err);
-      setError("Something went wrong while loading customers.");
+      toast("Failed to load customers", {
+        description: "Something went wrong while loading customers.",
+      });
     } finally {
       setLoading(false);
     }
@@ -72,7 +73,10 @@ export default function CustomersPage() {
 
   async function handleDelete(customer) {
     if (customer.id === 1) {
-      setActionMessage("Cannot delete the default Walk-in Customer.");
+      toast("Cannot delete Walk-in customer", {
+        description:
+          "The default Walk-in Customer is reserved and cannot be removed.",
+      });
       return;
     }
 
@@ -89,24 +93,32 @@ export default function CustomersPage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        setActionMessage(data.message || "Failed to delete customer.");
+        toast("Failed to delete customer", {
+          description: data.message || "Please try again.",
+        });
         return;
       }
 
-      setActionMessage("Customer deleted successfully.");
+      toast("Customer deleted", {
+        description: `“${customer.name}” has been removed.`,
+      });
       fetchCustomers();
     } catch (err) {
       console.error("Delete customer error:", err);
-      setActionMessage("Something went wrong while deleting.");
+      toast("Failed to delete customer", {
+        description: "Something went wrong while deleting.",
+      });
     }
   }
 
   function handleFormSuccess() {
-    setActionMessage(
-      selectedCustomer
-        ? "Customer updated successfully."
-        : "Customer created successfully."
-    );
+    const isEdit = Boolean(selectedCustomer);
+    toast.success(isEdit ? "Customer updated" : "Customer created", {
+      description: isEdit
+        ? "The customer details have been updated."
+        : "A new customer has been added.",
+    });
+
     setDialogOpen(false);
     setSelectedCustomer(null);
     fetchCustomers();
@@ -142,18 +154,6 @@ export default function CustomersPage() {
                 Add customer
               </Button>
             </div>
-
-            {/* Messages */}
-            {error && (
-              <FieldDescription className="text-xs text-red-500 sm:text-sm">
-                {error}
-              </FieldDescription>
-            )}
-            {actionMessage && !error && (
-              <FieldDescription className="text-xs text-green-600 sm:text-sm">
-                {actionMessage}
-              </FieldDescription>
-            )}
 
             {/* Customers list */}
             <section className="rounded-lg border bg-background p-3 sm:p-4">
