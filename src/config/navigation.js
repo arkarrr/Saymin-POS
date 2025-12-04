@@ -3,6 +3,7 @@ import {
   IconDoorEnter,
   IconHome,
   IconLayoutDashboard,
+  IconPackage,
   IconTrademark,
   IconUsersGroup,
 } from "@tabler/icons-react";
@@ -17,6 +18,11 @@ export const primaryNavItems = [
     title: "Customers",
     url: "/customers",
     icon: IconUsersGroup,
+  },
+  {
+    title: "Products",
+    url: "/products",
+    icon: IconPackage,
   },
   {
     title: "Brands",

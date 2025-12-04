@@ -1,18 +1,16 @@
 // src/lib/prisma.js
 import { PrismaClient } from "@prisma/client";
 
-let prisma;
+const globalForPrisma = globalThis;
 
-if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient();
-} else {
-  // In development, reuse the same client across hot reloads
-  if (!global.prisma) {
-    global.prisma = new PrismaClient({
-      log: ["error", "warn"],
-    });
-  }
-  prisma = global.prisma;
+const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log: ["error", "warn"],
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
 }
 
-export default prisma;  // IMPORTANT: default export
+export default prisma; // IMPORTANT: default export
