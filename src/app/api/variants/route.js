@@ -8,10 +8,26 @@ import {
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req) {
   try {
+    const { searchParams } = new URL(req.url);
+    const productIdParam = searchParams.get("productId");
+    let productFilter = {};
+
+    if (productIdParam !== null) {
+      const productId = Number(productIdParam);
+      if (!Number.isInteger(productId) || productId <= 0) {
+        return NextResponse.json(
+          { message: "productId must be a valid id" },
+          { status: 400 }
+        );
+      }
+      productFilter = { productId };
+    }
+
     const variants = await prisma.productVariant.findMany({
       orderBy: { createdAt: "desc" },
+      where: productFilter,
       include: {
         product: {
           select: { id: true, name: true, brandId: true },

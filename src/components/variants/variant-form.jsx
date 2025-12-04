@@ -21,11 +21,11 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-export function VariantForm({ variant, onSuccess, onClose }) {
+export function VariantForm({ variant, onSuccess, onClose, product }) {
   const isEdit = Boolean(variant);
 
   const [products, setProducts] = React.useState([]);
-  const [productLoading, setProductLoading] = React.useState(true);
+  const [productLoading, setProductLoading] = React.useState(!product);
 
   const [productId, setProductId] = React.useState(
     variant?.product?.id ?? variant?.productId ?? ""
@@ -74,11 +74,15 @@ export function VariantForm({ variant, onSuccess, onClose }) {
       }
     }
 
-    loadProducts();
-  }, []);
+    if (!product) {
+      loadProducts();
+    }
+  }, [product]);
 
   React.useEffect(() => {
-    setProductId(variant?.product?.id ?? variant?.productId ?? "");
+    setProductId(
+      product?.id ?? variant?.product?.id ?? variant?.productId ?? ""
+    );
     setLabel(variant?.label ?? "");
     setUnit(variant?.unit ?? "");
     setSizeValue(variant?.sizeValue ?? "");
@@ -92,7 +96,7 @@ export function VariantForm({ variant, onSuccess, onClose }) {
       typeof variant?.isActive === "boolean" ? variant.isActive : true
     );
     setError("");
-  }, [variant]);
+  }, [variant, product]);
 
   function validateInputs() {
     if (!productId) return "Please select a product.";
@@ -195,19 +199,32 @@ export function VariantForm({ variant, onSuccess, onClose }) {
           <Select
             value={productId ? String(productId) : ""}
             onValueChange={(value) => setProductId(Number(value))}
-            disabled={isLoading || productLoading}
+            disabled={isLoading || productLoading || Boolean(product)}
           >
             <SelectTrigger>
-              <SelectValue placeholder={productLoading ? "Loading..." : "Select product"} />
+              <SelectValue
+                placeholder={
+                  product
+                    ? product.name
+                    : productLoading
+                    ? "Loading..."
+                    : "Select product"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
-              {products.map((p) => (
+              {(product ? [product] : products).map((p) => (
                 <SelectItem key={p.id} value={String(p.id)}>
                   {p.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {product && (
+            <FieldDescription className="text-xs text-muted-foreground">
+              This variant will be created under “{product.name}”.
+            </FieldDescription>
+          )}
         </Field>
 
         <Field>
