@@ -347,6 +347,35 @@ async function main() {
       },
     ],
   });
+
+    // 9. Seed Brands
+  console.log("Resetting brands...");
+
+  // Delete all existing brands (dev-friendly)
+  await prisma.brand.deleteMany({});
+
+  await prisma.brand.createMany({
+    data: [
+      {
+        name: "GreenGrow",
+        remarks: "Fertilizer and leafy crop specialists",
+      },
+      {
+        name: "AgriProtect",
+        remarks: "Pesticides and crop-protection chemicals",
+      },
+      {
+        name: "SunHarvest",
+        remarks: "Seeds and growth boosters",
+      },
+      {
+        name: "BioPlus",
+        remarks: "Organic and environment-friendly farm inputs",
+      },
+    ],
+  });
+
+  console.log("Brands seeded:", await prisma.brand.count());
 }
 
 main()

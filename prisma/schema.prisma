@@ -93,3 +93,12 @@ model Customer {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  remarks   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
