@@ -82,3 +82,14 @@ model UserOutlet {
 
   @@id([userId, outletId])
 }
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  address   String?
+  phone     String?
+  remarks   String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
