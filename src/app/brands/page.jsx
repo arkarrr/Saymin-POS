@@ -25,6 +25,8 @@ export default function BrandsPage() {
   const [loading, setLoading] = React.useState(true);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [selectedBrand, setSelectedBrand] = React.useState(null);
+  const [brandToDelete, setBrandToDelete] = React.useState(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   async function fetchBrands() {
     setLoading(true);
@@ -71,14 +73,16 @@ export default function BrandsPage() {
     }
   }
 
-  async function handleDelete(brand) {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${brand.name}"?`
-    );
-    if (!confirmed) return;
+  function openDeleteDialog(brand) {
+    setBrandToDelete(brand);
+  }
+
+  async function handleConfirmDelete() {
+    if (!brandToDelete) return;
+    setDeleteLoading(true);
 
     try {
-      const res = await fetch(`/api/brands/${brand.id}`, {
+      const res = await fetch(`/api/brands/${brandToDelete.id}`, {
         method: "DELETE",
       });
 
@@ -88,11 +92,12 @@ export default function BrandsPage() {
         toast("Failed to delete brand", {
           description: data.message || "Please try again.",
         });
+        setDeleteLoading(false);
         return;
       }
 
       toast("Brand deleted", {
-        description: `“${brand.name}” has been removed.`,
+        description: `“${brandToDelete.name}” has been removed.`,
       });
       fetchBrands();
     } catch (err) {
@@ -100,6 +105,9 @@ export default function BrandsPage() {
       toast("Failed to delete brand", {
         description: "Something went wrong while deleting.",
       });
+    } finally {
+      setDeleteLoading(false);
+      setBrandToDelete(null);
     }
   }
 
@@ -185,7 +193,7 @@ export default function BrandsPage() {
                               variant="outline"
                               size="sm"
                               className="h-7 px-2 text-xs text-red-600 hover:text-red-600"
-                              onClick={() => handleDelete(b)}
+                              onClick={() => openDeleteDialog(b)}
                             >
                               Del
                             </Button>
@@ -232,7 +240,7 @@ export default function BrandsPage() {
                                     variant="outline"
                                     size="sm"
                                     className="text-red-600 hover:text-red-600"
-                                    onClick={() => handleDelete(b)}
+                                    onClick={() => openDeleteDialog(b)}
                                   >
                                     Delete
                                   </Button>
@@ -267,6 +275,47 @@ export default function BrandsPage() {
               onSuccess={handleFormSuccess}
               onClose={() => handleDialogClose(false)}
             />
+          </DialogContent>
+        </Dialog>
+
+        {/* Confirm delete dialog */}
+        <Dialog
+          open={Boolean(brandToDelete)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setBrandToDelete(null);
+            }
+          }}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-base sm:text-lg">
+                Delete brand?
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                This action will permanently remove{" "}
+                <span className="font-semibold text-foreground">
+                  {brandToDelete?.name}
+                </span>{" "}
+                from your brand list.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setBrandToDelete(null)}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </SidebarInset>

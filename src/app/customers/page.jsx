@@ -25,6 +25,8 @@ export default function CustomersPage() {
   const [loading, setLoading] = React.useState(true);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [selectedCustomer, setSelectedCustomer] = React.useState(null);
+  const [customerToDelete, setCustomerToDelete] = React.useState(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   async function fetchCustomers() {
     setLoading(true);
@@ -71,7 +73,7 @@ export default function CustomersPage() {
     }
   }
 
-  async function handleDelete(customer) {
+  function openDeleteDialog(customer) {
     if (customer.id === 1) {
       toast("Cannot delete Walk-in customer", {
         description:
@@ -79,14 +81,15 @@ export default function CustomersPage() {
       });
       return;
     }
+    setCustomerToDelete(customer);
+  }
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${customer.name}"?`
-    );
-    if (!confirmed) return;
+  async function handleConfirmDelete() {
+    if (!customerToDelete) return;
+    setDeleteLoading(true);
 
     try {
-      const res = await fetch(`/api/customers/${customer.id}`, {
+      const res = await fetch(`/api/customers/${customerToDelete.id}`, {
         method: "DELETE",
       });
 
@@ -96,11 +99,12 @@ export default function CustomersPage() {
         toast("Failed to delete customer", {
           description: data.message || "Please try again.",
         });
+        setDeleteLoading(false);
         return;
       }
 
       toast("Customer deleted", {
-        description: `“${customer.name}” has been removed.`,
+        description: `“${customerToDelete.name}” has been removed.`,
       });
       fetchCustomers();
     } catch (err) {
@@ -108,6 +112,9 @@ export default function CustomersPage() {
       toast("Failed to delete customer", {
         description: "Something went wrong while deleting.",
       });
+    } finally {
+      setDeleteLoading(false);
+      setCustomerToDelete(null);
     }
   }
 
@@ -202,7 +209,7 @@ export default function CustomersPage() {
                               variant="outline"
                               size="sm"
                               className="h-7 px-2 text-xs text-red-600 hover:text-red-600"
-                              onClick={() => handleDelete(c)}
+                              onClick={() => openDeleteDialog(c)}
                               disabled={c.id === 1}
                             >
                               Del
@@ -261,7 +268,7 @@ export default function CustomersPage() {
                                     variant="outline"
                                     size="sm"
                                     className="text-red-600 hover:text-red-600"
-                                    onClick={() => handleDelete(c)}
+                                    onClick={() => openDeleteDialog(c)}
                                     disabled={c.id === 1}
                                   >
                                     Delete
@@ -297,6 +304,47 @@ export default function CustomersPage() {
               onSuccess={handleFormSuccess}
               onClose={() => handleDialogClose(false)}
             />
+          </DialogContent>
+        </Dialog>
+
+        {/* Confirm delete dialog */}
+        <Dialog
+          open={Boolean(customerToDelete)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setCustomerToDelete(null);
+            }
+          }}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-base sm:text-lg">
+                Delete customer?
+              </DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                This action will permanently remove{" "}
+                <span className="font-semibold text-foreground">
+                  {customerToDelete?.name}
+                </span>{" "}
+                from your customer list.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCustomerToDelete(null)}
+                disabled={deleteLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </SidebarInset>
