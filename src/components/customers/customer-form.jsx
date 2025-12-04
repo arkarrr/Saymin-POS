@@ -29,17 +29,60 @@ export function CustomerForm({ customer, onSuccess, onClose }) {
     setError("");
   }, [customer]);
 
+  function validateInputs() {
+    const trimmedName = name.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedAddress = address.trim();
+    const trimmedRemarks = remarks.trim();
+
+    if (trimmedName.length < 2) {
+      return "Name must be at least 2 characters long.";
+    }
+
+    if (trimmedName.length > 100) {
+      return "Name must be 100 characters or less.";
+    }
+
+    if (trimmedPhone) {
+      const phoneRegex = /^[+0-9().\s-]{6,20}$/;
+      if (!phoneRegex.test(trimmedPhone)) {
+        return "Phone can only include numbers, spaces, +, -, ( ) or .";
+      }
+    }
+
+    if (trimmedAddress.length > 200) {
+      return "Address must be 200 characters or less.";
+    }
+
+    if (trimmedRemarks.length > 200) {
+      return "Remarks must be 200 characters or less.";
+    }
+
+    return null;
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    const validationError = validateInputs();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
+      const trimmedName = name.trim();
+      const trimmedPhone = phone.trim();
+      const trimmedAddress = address.trim();
+      const trimmedRemarks = remarks.trim();
       const payload = {
-        name,
-        address: address || null,
-        phone: phone || null,
-        remarks: remarks || null,
+        name: trimmedName,
+        address: trimmedAddress || null,
+        phone: trimmedPhone || null,
+        remarks: trimmedRemarks || null,
       };
 
       const url = isEdit ? `/api/customers/${customer.id}` : "/api/customers";

@@ -1,6 +1,10 @@
 // app/api/customers/[id]/route.js
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import {
+  ensureUniqueCustomerName,
+  validateCustomerPayload,
+} from "../validators";
 
 export async function GET(_req, { params }) {
   const { id: idParam } = await params;
@@ -40,23 +44,23 @@ export async function PUT(req, { params }) {
 
   try {
     const body = await req.json();
-    const { name, address, phone, remarks } = body || {};
+    const { data, error } = validateCustomerPayload(body);
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
+    if (error) {
+      return NextResponse.json({ message: error }, { status: 400 });
+    }
+
+    const duplicateCheck = await ensureUniqueCustomerName(data.name, id);
+    if (duplicateCheck.error) {
       return NextResponse.json(
-        { message: "Name is required" },
+        { message: duplicateCheck.error },
         { status: 400 }
       );
     }
 
     const updated = await prisma.customer.update({
       where: { id },
-      data: {
-        name: name.trim(),
-        address: address || null,
-        phone: phone || null,
-        remarks: remarks || null,
-      },
+      data,
     });
 
     return NextResponse.json(updated);
